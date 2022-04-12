@@ -1,14 +1,13 @@
 PROTO = test
-PROTO_DIR = ./packet
 PY = python
+CURRENT = $(shell pwd)
 
 
-proto: ${PROTO}.proto ${PROTO_DIR}
-	${PY} -m grpc.tools.protoc -I./ --python_out=${PROTO_DIR} \
- --grpc_python_out=${PROTO_DIR} $<
+proto: ${PROTO}.proto
+	${PY} -m grpc.tools.protoc -I./ --python_out=./ \
+ --grpc_python_out=./ $<
 
-${PROTO_DIR}:
-	mkdir -p $@
 
 clean:
-	rm -r ${PROTO_DIR}
+	rm ${PROTO}_pb2.py ${PROTO}_pb2_grpc.py
+	rm -r __pycache__
