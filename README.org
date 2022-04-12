@@ -1,0 +1,6 @@
+* Network Structure Testing
+Python으로 작성된 다양한 통신 방법의 Prototype들
+
+** Purpose
+서버와 클라이언트 간에 통신하는 여러 방법들을 Prototyping하는 것
+
