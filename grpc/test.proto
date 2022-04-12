@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package packet;
+
+service RemoteSum
+{
+  rpc sum(Blob) returns (Response) {}
+}
+
+message Blob
+{
+  repeated float values = 1;
+}
+
+message Response
+{
+  float ans = 1;
+}
