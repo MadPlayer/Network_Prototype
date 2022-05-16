@@ -9,9 +9,16 @@ class ServerImpl(test_grpc.RemoteSumServicer):
         return test_pb2.Response(ans = sum(request.values))
 
 
-if __name__ == '__main__':
+def main():
     server = grpc.server(ThreadPoolExecutor(max_workers=8))
-    test_grpc.add_RemoteSumServicer_to_server(ServerImpl(), server)
     server.add_insecure_port("[::]:50051")
+    test_grpc.add_RemoteSumServicer_to_server(ServerImpl(), server)
     server.start()
     server.wait_for_termination()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception as e:
+        print(e.args)

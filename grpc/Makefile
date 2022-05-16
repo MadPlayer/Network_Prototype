@@ -9,5 +9,5 @@ proto: ${PROTO}.proto
 
 
 clean:
-	rm ${PROTO}_pb2.py ${PROTO}_pb2_grpc.py
-	rm -r __pycache__
+	rm -f ${PROTO}_pb2.py ${PROTO}_pb2_grpc.py
+	rm -rf __pycache__
