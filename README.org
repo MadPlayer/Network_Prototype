@@ -1,6 +1,13 @@
-* Network Structure Testing
-Python으로 작성된 다양한 통신 방법의 Prototype들
-
-** Purpose
-서버와 클라이언트 간에 통신하는 여러 방법들을 Prototyping하는 것
-
+* Network Protocol Testing
+엣지 컴퓨팅시 엣지 장치의 성능 향상을 위해 컴퓨팅을 엣지 서버에 요청하게 된다. 이를 엣지 장치가 엣지 서버의 자원을 빌린다고 하며 한 단어로 Offloading이라는 용어를 사용한다. 본 Prototype은 다양한 방식을 사용하여 Offloading시 발생하는 Networking Overhead를 최소화하는 프로토콜을 찾는 것을 목적으로 한다.
+목표로 하는 Offloading Interface는 Future-Promise 비동기 방식이다.
+#+BEGIN_SRC python
+  client = OffloadingClient()
+  future = None
+  while True:
+      offloading_data = client_work()
+      if future:
+          outcome = future.result() # finish previous job
+          finish_job(outcome)
+      future = client.request(offloading_data) # async request
+#+END_SRC
