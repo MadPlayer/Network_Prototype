@@ -1,0 +1,7 @@
+* Overview
+#+caption: Offloading via AMQP
+[[file:./AMQP.png]]
+
+Client 즉 Edge Device가 요청하는 경우에는 다수의 Edge Server가 구독하고 있는 Public Queue에 요청을 보냅니다. 이후에 Client는 Future 객체를 이용해 결과를 받을 때 자신만의 Queue에 저장된 결과를 받게 된다.
+
+* Server
