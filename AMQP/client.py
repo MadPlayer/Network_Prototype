@@ -1,4 +1,5 @@
 import asyncio
+import time
 import uuid
 from aio_pika import Message, connect
 from aio_pika.abc import (
@@ -29,16 +30,18 @@ class OffloadingClient:
             f"amqp://{login}:{password}@{URL}/", loop=self.loop,
         )
         self.channel = await self.conn.channel()
-        self.callback_queue = await self.channel.declare_queue(exclusive=True)
+        self.callback_queue = await self.channel.declare_queue(exclusive=True,
+                                                               auto_delete=True)
         await self.callback_queue.consume(self.callback)
 
         return self
 
 
-    def callback(self, message: AbstractIncomingMessage):
+    async def callback(self, message: AbstractIncomingMessage):
         if message.correlation_id is None:
             print(f"Bad message {message!r}")
 
+        await message.ack()
         future = self.futures.pop(message.correlation_id)
         future.set_result(message.body)
 
@@ -65,9 +68,11 @@ class OffloadingClient:
 async def main():
     client = await OffloadingClient().connect(login="client1", password="test")
     print(" [x] Requesting fib(30)")
-    future = await client.request(30)
-    response = int(await future)
-    print(f" [.] Got {response!r}")
+    for i in range(1000):
+        future = await client.request(30)
+        response = int(await future)
+        print(f" [.] Got {response!r}")
+        time.sleep(0.5)
 
 
 if __name__ == '__main__':

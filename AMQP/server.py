@@ -26,7 +26,7 @@ async def main():
     exchange = channel.default_exchange
 
     queue = await channel.declare_queue("rpc_queue")
-
+    await channel.set_qos(prefetch_count=1)
     print(" [X] Awaiting RPC requests")
 
     async with queue.iterator() as it:
@@ -50,7 +50,7 @@ async def main():
                     )
                     print("Request complete")
             except Exception:
-                logging.exception("Processing get Error %r", message)
+                logging.exception("Processing got Error %r", message)
 
 
 if __name__ == '__main__':
