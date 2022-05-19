@@ -10,11 +10,11 @@ class ServerImpl(test_grpc.RemoteSumServicer):
 
 
 async def main():
-    server = grpc.aio.server()
-    server.add_insecure_port("[::]:50051")
-    test_grpc.add_RemoteSumServicer_to_server(ServerImpl(), server)
-    await server.start()
-    await server.wait_for_termination()
+    test_server = server()
+    test_server.add_insecure_port("[::]:50051")
+    test_grpc.add_RemoteSumServicer_to_server(ServerImpl(), test_server)
+    await test_server.start()
+    await test_server.wait_for_termination()
 
 
 if __name__ == '__main__':
