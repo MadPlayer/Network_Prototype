@@ -2,5 +2,8 @@
 #+caption: Offloading via AMQP
 [[file:./AMQP.png]]
 
-Client 즉 Edge Device가 요청하는 경우에는 다수의 Edge Server가 구독하고 있는 Public Queue에 요청을
-보낸다. 이후에 Client는 Future 객체를 이용해 결과를 받을 때 자신만의 Queue에 저장된 결과를 받게 된다.
+본 Prototype에서는 그림에서 보이는 shared queue를 =rpc_queue= 라고 명명했으며 이 queue는 Default
+Exchange 즉 Direct Exchange를 사용한다. 그러므로 각 Server 들은 중복된 Message를 수신하지 않는다.
+prefetch를 1로 즉 Server가 Message를 한번에 1개씩만 받게 한 이유는 다수의 Server에 Loadbalancing이
+효율적으로 이루어지도록 하기 위함이다.
+코드는 aio-pika의 공식 문서를 참조하여 작성했다.
