@@ -1,0 +1,46 @@
+* Overview
+[[file:./MQTT-AMQP.png]]
+
+MQTT는 매우 간단한 저사양 기기를 위한 통신 프로토콜이다.
+MQTT의 QoS는 3가지 Level이 있다.
+0. 최대 한번 (QoS 0)
+1. 최소 한번 (QoS 1)
+2. 정확히 한번 (QoS 2)
+
+본 아이디어는 RabbitMQ가 지원하는 특별한 기능에 의존해 구현된다.
+RabbitMQ는 Plugin을 통해 MQTT Client와 AMQP Client 간 Message를 주고 받을 수 있게 한다.
+이 다음으로 설명하는 부분은 MQTT Topic에 대한 약간의 지식과 AMQP Message 전달에 관한 지식을 필요로 한다.
+
+* MQTT Client to AMQP Client
+AMQP Queue로 Message를 전달하기 위해서는 항상 Exchange를 사용해야 한다.
+Exchange를 사용하여 Client는 Message를 *서버* 들에게 Round Robin으로 분배할 수도 또는 Topic 기반으로 다수의 서버들에게 동일 Message를 발행할 수도 있다.
+하지만 이 MQTT의 경우 Exchange라는 개념이 없고 단순히 Topic 기반의 발행, 구독 프로토콜이다.
+이를 RabbitMQ는 MQTT 용 Exchange를 두어 해결했다.
+그림을 보면 =amq.direct= 라는 Exchange를 통해 AMQP와 MQTT를 건너 Message를 전달하고 있다.
+과정은 다음과 같다. MQTT Client는 =rpc_queue= 라는 Topic에 Message를 발행한다.
+RabbitMQ는 MQTT Message를 그 Topic (=rpc_queue=)을 구독하고 있는 다른 MQTT Client 뿐만 아니라 =amq.direct= Exchange에 bind된 Queue에도 Message를 전달한다. 물론 Message는 Exchange의 특성을 반영해 전달된다.
+그림에는 Server 간에 공유하고 있는 Queue가 =amq.direct= 와 bind되어 있다.
+이름에서 알 수 있듯이 =amq.direct= 는 Direct Exchange이며 Queue로 전달된 Message는 각각 하나의 Server에게 전달된다. (unicast)
+여기서 주의사항이 생기는데 Direct Exchange가 Message를 특정 Queue에 전달하기 위해서는 routing key 즉 전달해야하는 Queue의 이름을 알고 있어야한다.
+충분히 예상할 수 있듯이 Queue의 이름은 =rpc_queue= 즉 MQTT Topic의 이름과 동일하다.
+원래 MQTT Topic의 이름 포멧과 AMQP의 routing key의 포멧은 다르지만 이 경우는 무관하다. 왜냐면 계층화 되지 않은 이름이기 때문이다.
+
+* AMQP Client To MQTT Client
+Server가 Message에 대한 답장을 MQTT Client에게 전송하는 과정도 마찬가지로 =amq.direct= 를 통한다.
+표준적인 방법으로는 AMQP Server가 MQTT Client에게 특정 요청에 대한 답장을 전송할 수 없다.
+가능한 방법 중 하나는 MQTT Client가 요청을 보내기 전에 요청의 응답으로 사용될 임시 Topic을 생성하고 그 Topic의 이름을 요청 Message에 실어 보내는 것이다.
+본 예제에서는 uuid를 이용하여 임시 Topic 이름을 생성하였다.
+server.py를 보면 결과를 MQTT client에 전송하는 부분에 다음과 같은 Topic 이름 처리를 한다.
+그리고 그 처리된 Topic 이름을 routing key로 하여 Exchange에 발행한다.
+#+BEGIN_SRC python
+  await exchange.publish(
+      Message(
+          body="done".encode(),
+      ),
+
+      # AMQP routing_key to MQTT topic
+      routing_key=reply_to.replace("/", "."), 
+  )
+#+END_SRC
+여기서 MQTT Topic 이름과 AMQP routing key 포멧의 차이가 나타난다.
+MQTT Topic의 경우 계층이 있는 경우 =test/sub_topic/subsub_topic= 처럼 / 를 이용해 구분되고 AMQP routing key의 경우 =test.sub_topic.subsub_topic= 처럼 . 을 이용해 구분된다는 것이다.
