@@ -11,6 +11,7 @@ async def main():
     user = "worker1"
     pw = "test"
     conn = await connect(f"amqp://{user}:{pw}@{URL}/")
+    loop = asyncio.get_running_loop()
 
     channel = await conn.channel()
     await channel.set_qos(prefetch_count=1)
@@ -32,15 +33,16 @@ async def main():
                     # some code
                     print(f"Request: {data}")
                     print(f"Reply to: {reply_to}")
-                    await exchange.publish(
-                        Message(
-                            body="done".encode(),
-                        ),
 
-                        # AMQP routing_key to MQTT topic
-                        routing_key=reply_to.replace("/", "."), 
-                    )
-                    print("Reply Done")
+                    loop.create_task(
+                        exchange.publish(
+                            Message(
+                                body="done".encode(),
+                            ),
+                            # AMQP routing_key to MQTT topic
+                            routing_key=reply_to.replace("/", "."),
+                        )
+                    ).add_done_callback(lambda: print("Reply Done"))
 
             except Exception:
                 logging.exception("Processing got Error %r", message)
