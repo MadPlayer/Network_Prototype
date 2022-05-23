@@ -6,6 +6,8 @@ from aio_pika.abc import AbstractIncomingMessage
 URL = "localhost"
 
 fib_vals = [0, 1]
+
+
 def fib(n: int):
     i = len(fib_vals)
     while i <= n:
@@ -21,6 +23,7 @@ async def main():
     user = "worker1"
     pw = "test"
     conn = await connect(f"amqp://{user}:{pw}@{URL}/")
+    loop = asyncio.get_running_loop()
 
     channel = await conn.channel()
     exchange = channel.default_exchange
@@ -41,14 +44,16 @@ async def main():
                     print(f" [.] fib({n})")
                     response = str(fib(n)).encode()
 
-                    await exchange.publish(
-                        Message(
-                            body=response,
-                            correlation_id=message.correlation_id,
-                        ),
-                        routing_key=message.reply_to,
-                    )
-                    print("Request complete")
+                    loop.create_task(
+                        exchange.publish(
+                            Message(
+                                body=response,
+                                correlation_id=message.correlation_id,
+                            ),
+                            routing_key=message.reply_to,
+                        )
+                    ).add_done_callback(lambda: print("Request complete"))
+
             except Exception:
                 logging.exception("Processing got Error %r", message)
 
