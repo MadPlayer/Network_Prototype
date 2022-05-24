@@ -52,7 +52,7 @@ async def main():
                             ),
                             routing_key=message.reply_to,
                         )
-                    ).add_done_callback(lambda: print("Request complete"))
+                    ).add_done_callback(lambda x: print("Request complete"))
 
             except Exception:
                 logging.exception("Processing got Error %r", message)

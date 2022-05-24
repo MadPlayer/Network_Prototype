@@ -42,7 +42,7 @@ async def main():
                             # AMQP routing_key to MQTT topic
                             routing_key=reply_to.replace("/", "."),
                         )
-                    ).add_done_callback(lambda: print("Reply Done"))
+                    ).add_done_callback(lambda x: print("Reply Done"))
 
             except Exception:
                 logging.exception("Processing got Error %r", message)
