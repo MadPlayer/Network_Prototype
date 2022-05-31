@@ -1,0 +1,2 @@
+* common_package
+before use package, need to run =make= in package directory!

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package packet;
+
+service PrimeCalculate
+{
+  rpc get_prime_list(NumberRange) returns (Response) {}
+}
+
+message NumberRange
+{
+  repeated int64 values = 1;
+}
+
+message Response
+{
+  repeated int64 primes = 1;
+}
