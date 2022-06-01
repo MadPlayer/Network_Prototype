@@ -8,6 +8,9 @@ scrape_configs:
   - job_name: 'prometheus'
     scrape_interval: 5s
     static_configs:
-      - targets: ['203.255.57.125:15692']
+      - targets: ["<your local ip>:15692"]
         labels:
           group: "RabbitMQ"
+
+remote_write:
+  - url: "http://<your local ip>:9091"

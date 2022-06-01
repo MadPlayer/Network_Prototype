@@ -1,0 +1,13 @@
+* Grafana Setting
+=docker-compose= 를 사용하기 전에 다음의 명령을 실행해야 Grafana의 설정이 로컬에 저장된다.
+#+BEGIN_SRC bash
+  mkdir grafana
+  chown 472.472 grafana
+#+END_SRC
+그 후 prometheus 폴더 안의 prometheus.yaml 파일에 자신의 로컬 IP를 넣는다.
+
+드디어 =docker-compose= 를 실행하면 prometheus는 자신의 로컬의 9090 포트(default)로 열리게 되는데 이를 grafana의 datasource로 추가하여야 한다.
+datasource로 prometheus를 추가한 뒤에는 Rabbitmq(켜저 있어야 한다.)의 표준 dashboard를 grafana에 추가한다.
+grafana web UI에 dashboard import 옵션이 있다.
+[[https://grafana.com/grafana/dashboards/10991][rabbitmq dashboard]] 이 링크에 접속하면 dashboard를 import하기 위한 정보가 있다.
+dashboard를 추가하는 마지막 과정에 방금 추가한 prometheus datasource를 추가한다.
