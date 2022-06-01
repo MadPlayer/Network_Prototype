@@ -17,7 +17,7 @@ async def main():
     await channel.set_qos(prefetch_count=1)
 
     queue = await channel.declare_queue("rpc_queue")
-    exchange = await channel.get_exchange("amq.direct")
+    exchange = await channel.get_exchange("amq.topic")
     await queue.bind(exchange)
 
     print(" [X] Awaiting RPC requests")
