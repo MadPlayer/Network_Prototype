@@ -1,5 +1,7 @@
 import math
+from .test_pb2 import NumberRange, Response
 
+response = Response()
 
 def sieve_eratosthenes(max_number: int)->list[int]:
     # from wikipedia
@@ -12,7 +14,8 @@ def sieve_eratosthenes(max_number: int)->list[int]:
             for j in range(i**2, max_number + 1, i):
                 A[j - 2] = 1
 
-    return [p for p in A if p > 1]
+    response.primes[:] = [p for p in A if p > 1]
+    return response
 
 
 if __name__ == '__main__':

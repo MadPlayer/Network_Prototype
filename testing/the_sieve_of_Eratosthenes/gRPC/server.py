@@ -10,7 +10,6 @@ from common_package import (
 from prometheus_client import start_http_server, Counter
 
 request_counter = Counter("request", "the number of received requests")
-response_counter = Counter("response", "the number of responses")
 
 class Interceptor(ServerInterceptor):
     async def intercept_service(self, continuation, handler_call_details):
@@ -24,8 +23,7 @@ class Interceptor(ServerInterceptor):
 class ServerImpl(PrimeCalculateServicer):
     def get_prime_list(self, request: NumberRange, context)->Response:
         n = len(request.values)
-        response_counter.inc()
-        return Response(primes=sieve_eratosthenes(n))
+        return sieve_eratosthenes(n)
 
 
 async def main():
