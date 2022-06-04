@@ -13,7 +13,8 @@ from prometheus_client import Counter, start_http_server
 URL = "localhost"
 DATA = [i for i in range(100000)]
 request_msg = MQTT_AMQP_Request()
-request_msg.number_range = NumberRange(values=DATA)
+request_msg.number_range.values[:] = DATA
+result = Response()
 
 response_count = Counter("response_amqp_mqtt", "the number of response that client recieves")
 
@@ -51,7 +52,7 @@ class MQTTClient:
         async with self.client.filtered_messages(reply_topic) as msgs:
             async for msg in msgs:
                 response_count.inc()
-                future.set_result(msg)
+                future.set_result(msg.payload)
                 return
 
 
@@ -60,9 +61,9 @@ async def main():
     start_http_server(5000)
 
     while True:
-        future = await client.request()
+        future = await client.request(request_msg)
         msg = await future
-        msg = msg.ParseFromString()
+        result.ParseFromString(msg)
 
 
 if __name__ == '__main__':

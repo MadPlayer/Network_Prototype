@@ -13,7 +13,7 @@ from prometheus_client import Counter, start_http_server
 
 URL = "localhost"
 request_msg = MQTT_AMQP_Request()
-request_count = Counter("request_amqp",
+request_count = Counter("request_amqp_mqtt",
                         "The number of Requests that server recieves")
 
 
@@ -46,7 +46,7 @@ async def main():
                         exchange.publish(
                             Message(
                                 body=sieve_eratosthenes(
-                                    len(data)).SerializeToString()
+                                    len(data.values)).SerializeToString()
                             ),
                             # AMQP routing_key to MQTT topic
                             routing_key=reply_to.replace("/", "."),
