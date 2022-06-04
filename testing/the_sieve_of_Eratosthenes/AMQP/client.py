@@ -12,10 +12,12 @@ from common_package import (
     NumberRange,
     Response,
 )
+from prometheus_client import Counter, start_http_server
 
 URL = "localhost"
 DATA = [i for i in range(100000)]
 
+response_count = Counter("response_amqp", "the number of response that client recieves")
 
 class OffloadingClient:
     conn: AbstractConnection
@@ -45,6 +47,7 @@ class OffloadingClient:
             print(f"Bad message {message!r}")
 
         await message.ack()
+        response_count.inc()
         future = self.futures.pop(message.correlation_id)
         future.set_result(message.body)
 

@@ -7,10 +7,12 @@ from common_package import (
     Response,
     sieve_eratosthenes,
 )
-from prometheus_client import Counter
+from prometheus_client import Counter, start_http_server
 
 
 URL = "localhost"
+request_count = Counter("request_amqp",
+                        "The number of Requests that server recieves")
 
 
 async def main():
@@ -19,6 +21,7 @@ async def main():
     conn = await connect(f"amqp://{user}:{pw}@{URL}/")
     loop = asyncio.get_running_loop()
     msg = NumberRange()
+    start_http_server(1234)
 
     channel = await conn.channel()
     exchange = channel.default_exchange
@@ -33,10 +36,11 @@ async def main():
             try:
                 async with message.process(requeue=False):
                     assert message.reply_to is not None
+                    request_count.inc()
 
                     msg.ParseFromString(message.body)
 
-                    response = sieve_eratosthenes(len(msg.primes))
+                    response = sieve_eratosthenes(len(msg.values))
 
                     loop.create_task(
                         exchange.publish(
