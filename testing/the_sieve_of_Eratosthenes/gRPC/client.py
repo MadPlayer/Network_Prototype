@@ -12,7 +12,7 @@ response_counter = Counter("response", "the number of responses")
 
 
 class Interceptor(UnaryUnaryClientInterceptor):
-    async def intercept_unary_unary(continuation, client_call_details, request):
+    async def intercept_unary_unary(self, continuation, client_call_details, request):
         response_counter.inc()
         return await continuation(client_call_details, request)
 
@@ -28,7 +28,7 @@ async def main():
         stub = PrimeCalculateStub(channel)
         print("---start request---")
         future: UnaryUnaryCall = None
-        for i in range(10):
+        while True:
             if future:
                 # callback(await future)
                 await future
