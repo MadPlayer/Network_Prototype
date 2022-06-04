@@ -74,9 +74,12 @@ class OffloadingClient:
 async def main():
     client = await OffloadingClient().connect(login="client1", password="test")
     request_msg = NumberRange(values=DATA)
+    result = Response()
+    start_http_server(5000)
     while True:
         future = await client.request(request_msg)
         response = await future
+        result.ParseFromString(response)
 
 
 if __name__ == '__main__':
