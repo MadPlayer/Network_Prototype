@@ -7,11 +7,15 @@ from common_package import (
     Response,
     sieve_eratosthenes,
 )
-from prometheus_client import start_http_server, Counter
+from prometheus_client import start_http_server, Counter, Histogram
+from prometheus_async.aio import time
 
 request_counter = Counter("request", "the number of received requests")
+response_time = Histogram("response_time", "Histogram for networking time which spent to send response")
+
 
 class Interceptor(ServerInterceptor):
+    @time(response_time)
     async def intercept_service(self, continuation, handler_call_details):
         """
         Intercepts incoming RPCs before handling them over to a handler

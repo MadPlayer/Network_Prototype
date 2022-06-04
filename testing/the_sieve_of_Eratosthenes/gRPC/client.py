@@ -5,14 +5,19 @@ from common_package import (
     NumberRange,
     Response,
 )
-from prometheus_client import start_http_server, Counter
+from prometheus_client import start_http_server, Counter, Histogram
+from prometheus_async.aio import time
+
 
 DATA = [i for i in range(100000)]
 response_counter = Counter("response", "the number of responses")
+request_time = Histogram("request_time", "Histogram for networking time which spent to send resquest")
 
 
 class Interceptor(UnaryUnaryClientInterceptor):
-    async def intercept_unary_unary(self, continuation, client_call_details, request):
+    @time(request_time)
+    async def intercept_unary_unary(self, continuation, client_call_details,
+                                    request):
         response_counter.inc()
         return await continuation(client_call_details, request)
 
