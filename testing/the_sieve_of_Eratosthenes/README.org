@@ -1,2 +1,13 @@
 * common_package
 before use package, need to run =make= in package directory!
+
+* Prometheus 측정 방식
+이 실험에서 측정하려고 하는 것은 다음과 같다.
+- Client Side
+  - Request에 대한 응답을 받는데 소모되는 시간
+  - Request를 보내기 위해 Network에 소모되는 시간
+  - Request 전송률
+
+- Server Side
+  - Request를 보내는데 소모되는 시간
+  - Request 수신률
