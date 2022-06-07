@@ -25,7 +25,7 @@ def callback(outcome):
 
 
 async def main():
-    request_msg = Blob(data=DATA)
+    request_msg = Blob(data=pickle.dumps(DATA))
     start_http_server(5000)
     async with insecure_channel(f"{URL}:50051", interceptors=(Interceptor(), )) as channel:
         stub = PrimeCalculateStub(channel)

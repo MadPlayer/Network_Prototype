@@ -69,8 +69,8 @@ class OffloadingClient:
 async def main():
     client = await OffloadingClient().connect(login="client1", password="test")
     start_http_server(5000)
+    request_msg = pickle.dumps(DATA)
     while True:
-        request_msg = pickle.dumps(DATA)
         future = await client.request(request_msg)
         result = pickle.loads(await future)
 

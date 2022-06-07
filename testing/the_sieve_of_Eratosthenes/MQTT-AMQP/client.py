@@ -7,6 +7,7 @@ from common_package import DATA, URL
 
 
 response_count = Counter("response_amqp_mqtt", "the number of response that client recieves")
+data = pickle.dumps(DATA)
 
 class MQTTClient:
     loop: asyncio.AbstractEventLoop
@@ -22,12 +23,12 @@ class MQTTClient:
         await self.client.subscribe(f"test/{username}/+")
         return self
 
-    async def request(self, data):
+    async def request(self):
         future = self.loop.create_future()
-        self.loop.create_task(self.request_(future, data))
+        self.loop.create_task(self.request_(future))
         return future
 
-    async def request_(self, future, data):
+    async def request_(self, future):
         call_id = str(uuid.uuid4())
         reply_topic = f"test/{self.username}/{call_id}"
         msg = {
@@ -54,7 +55,7 @@ async def main():
     start_http_server(5000)
 
     while True:
-        future = await client.request(DATA)
+        future = await client.request()
         msg = pickle.loads(await future)
 
 

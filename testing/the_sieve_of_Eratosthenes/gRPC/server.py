@@ -9,6 +9,7 @@ from common_package import (
 from prometheus_client import start_http_server, Counter
 
 request_counter = Counter("request", "the number of received requests")
+blob = Blob()
 
 class Interceptor(ServerInterceptor):
     async def intercept_service(self, continuation, handler_call_details):
@@ -23,7 +24,8 @@ class ServerImpl(PrimeCalculateServicer):
     def get_prime_list(self, request, context):
         n = len(pickle.loads(request.data))
         ans = sieve_eratosthenes(n)
-        return Blob(data=pickle.dumps(ans))
+        blob.data = pickle.dumps(ans)
+        return blob
 
 
 async def main():
