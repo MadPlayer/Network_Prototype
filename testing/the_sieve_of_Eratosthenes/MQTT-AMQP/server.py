@@ -3,16 +3,10 @@ import pickle
 import logging
 from aio_pika import Message, connect
 from aio_pika.abc import AbstractIncomingMessage
-from common_package import (
-    NumberRange,
-    Response,
-    MQTT_AMQP_Request,
-    sieve_eratosthenes,
-)
+from common_package import sieve_eratosthenes
 from prometheus_client import Counter, start_http_server
 
 URL = "localhost"
-request_msg = MQTT_AMQP_Request()
 request_count = Counter("request_amqp",
                         "The number of Requests that server recieves")
 
@@ -38,15 +32,14 @@ async def main():
             try:
                 async with message.process(requeue=False):
                     request_count.inc()
-                    request_msg.ParseFromString(message.body)
-                    data = request_msg.number_range
-                    reply_to = request_msg.reply_to
+                    request_msg = pickle.loads(message.body)
+                    data = request_msg["data"]
+                    reply_to = request_msg["reply_to"]
 
                     loop.create_task(
                         exchange.publish(
                             Message(
-                                body=sieve_eratosthenes(
-                                    len(data)).SerializeToString()
+                                body=pickle.dumps(sieve_eratosthenes(len(data)))
                             ),
                             # AMQP routing_key to MQTT topic
                             routing_key=reply_to.replace("/", "."),

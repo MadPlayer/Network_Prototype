@@ -2,18 +2,11 @@ import asyncio
 import pickle
 import uuid
 from asyncio_mqtt import Client, MqttError
-from common_package import (
-    NumberRange,
-    Response,
-    MQTT_AMQP_Request,
-)
 from prometheus_client import Counter, start_http_server
 
 
 URL = "localhost"
 DATA = [i for i in range(100000)]
-request_msg = MQTT_AMQP_Request()
-request_msg.number_range = NumberRange(values=DATA)
 
 response_count = Counter("response_amqp_mqtt", "the number of response that client recieves")
 
@@ -31,19 +24,22 @@ class MQTTClient:
         await self.client.subscribe(f"test/{username}/+")
         return self
 
-    async def request(self, msg):
+    async def request(self, data):
         future = self.loop.create_future()
-        self.loop.create_task(self.request_(future, msg))
+        self.loop.create_task(self.request_(future, data))
         return future
 
-    async def request_(self, future, msg):
+    async def request_(self, future, data):
         call_id = str(uuid.uuid4())
         reply_topic = f"test/{self.username}/{call_id}"
-        msg.reply_to = reply_topic
+        msg = {
+            "reply_to" : reply_topic,
+            "data": data,
+        }
         self.loop.create_task(
             self.client.publish(
                 "rpc_queue",
-                payload=msg.SerializeToString(),
+                payload=pickle.dumps(msg),
                 qos=1,
             )
         )
@@ -60,9 +56,8 @@ async def main():
     start_http_server(5000)
 
     while True:
-        future = await client.request()
-        msg = await future
-        msg = msg.ParseFromString()
+        future = await client.request(DATA)
+        msg = pickle.loads(await future)
 
 
 if __name__ == '__main__':
