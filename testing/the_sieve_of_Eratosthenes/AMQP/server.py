@@ -1,12 +1,9 @@
 import asyncio
 import logging
+import pickle
 from aio_pika import Message, connect
 from aio_pika.abc import AbstractIncomingMessage
-from common_package import (
-    NumberRange,
-    Response,
-    sieve_eratosthenes,
-)
+from common_package import sieve_eratosthenes
 from prometheus_client import Counter, start_http_server
 
 
@@ -20,7 +17,6 @@ async def main():
     pw = "test"
     conn = await connect(f"amqp://{user}:{pw}@{URL}/")
     loop = asyncio.get_running_loop()
-    msg = NumberRange()
     start_http_server(1234)
 
     channel = await conn.channel()
@@ -38,14 +34,14 @@ async def main():
                     assert message.reply_to is not None
                     request_count.inc()
 
-                    msg.ParseFromString(message.body)
+                    msg = pickle.loads(message.body)
 
-                    response = sieve_eratosthenes(len(msg.values))
+                    response = sieve_eratosthenes(len(msg))
 
                     loop.create_task(
                         exchange.publish(
                             Message(
-                                body=response.SerializeToString(),
+                                body=pickle.dumps(response),
                                 correlation_id=message.correlation_id,
                             ),
                             routing_key=message.reply_to,

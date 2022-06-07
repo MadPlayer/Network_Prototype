@@ -1,6 +1,7 @@
 import asyncio
 import time
 import uuid
+import pickle
 from aio_pika import Message, connect
 from aio_pika.abc import (
     AbstractChannel,
@@ -8,10 +9,7 @@ from aio_pika.abc import (
     AbstractIncomingMessage,
     AbstractQueue,
 )
-from common_package import (
-    NumberRange,
-    Response,
-)
+from common_package import Blob
 from prometheus_client import Counter, start_http_server
 
 URL = "localhost"
@@ -51,7 +49,7 @@ class OffloadingClient:
         future = self.futures.pop(message.correlation_id)
         future.set_result(message.body)
 
-    async def request(self, msg: NumberRange) -> asyncio.Future:
+    async def request(self, msg) -> asyncio.Future:
         correlation_id = str(uuid.uuid4())
         future = self.loop.create_future()
 
@@ -60,7 +58,7 @@ class OffloadingClient:
         self.loop.create_task(
             self.channel.default_exchange.publish(
                 Message(
-                    msg.SerializeToString(),
+                    pickle.dumps(msg),
                     correlation_id=correlation_id,
                     reply_to=self.callback_queue.name,
                 ),
@@ -73,13 +71,11 @@ class OffloadingClient:
 
 async def main():
     client = await OffloadingClient().connect(login="client1", password="test")
-    request_msg = NumberRange(values=DATA)
-    result = Response()
     start_http_server(5000)
     while True:
+        request_msg = pickle.dumps(DATA)
         future = await client.request(request_msg)
-        response = await future
-        result.ParseFromString(response)
+        result = pickle.loads(await future)
 
 
 if __name__ == '__main__':
