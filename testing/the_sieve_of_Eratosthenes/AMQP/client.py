@@ -9,11 +9,8 @@ from aio_pika.abc import (
     AbstractIncomingMessage,
     AbstractQueue,
 )
-from common_package import Blob
+from common_package import Blob, URL, DATA
 from prometheus_client import Counter, start_http_server
-
-URL = "localhost"
-DATA = [i for i in range(100000)]
 
 response_count = Counter("response_amqp", "the number of response that client recieves")
 

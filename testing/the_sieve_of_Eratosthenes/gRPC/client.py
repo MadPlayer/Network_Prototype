@@ -4,13 +4,13 @@ from grpc.aio import insecure_channel, UnaryUnaryCall, UnaryUnaryClientIntercept
 from common_package import (
     PrimeCalculateStub,
     Blob,
+    URL,
+    DATA,
 )
-from prometheus_client import start_http_server, Counter, Histogram
+from prometheus_client import start_http_server, Counter
 
 
-DATA = [i for i in range(100000)]
 response_counter = Counter("response", "the number of responses")
-request_time = Histogram("request_time", "Histogram for networking time which spent to send resquest")
 
 
 class Interceptor(UnaryUnaryClientInterceptor):
@@ -27,7 +27,7 @@ def callback(outcome):
 async def main():
     request_msg = Blob(data=DATA)
     start_http_server(5000)
-    async with insecure_channel("localhost:50051", interceptors=(Interceptor(), )) as channel:
+    async with insecure_channel(f"{URL}:50051", interceptors=(Interceptor(), )) as channel:
         stub = PrimeCalculateStub(channel)
         print("---start request---")
         future: UnaryUnaryCall = None

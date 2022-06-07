@@ -3,10 +3,8 @@ import pickle
 import uuid
 from asyncio_mqtt import Client, MqttError
 from prometheus_client import Counter, start_http_server
+from common_package import DATA, URL
 
-
-URL = "localhost"
-DATA = [i for i in range(100000)]
 
 response_count = Counter("response_amqp_mqtt", "the number of response that client recieves")
 
