@@ -7,7 +7,7 @@ from common_package import sieve_eratosthenes
 from prometheus_client import Counter, start_http_server
 
 URL = "localhost"
-request_count = Counter("request_amqp",
+request_count = Counter("request_amqp_mqtt",
                         "The number of Requests that server recieves")
 
 

@@ -1,7 +1,7 @@
 import math
 
 
-def sieve_eratosthenes(max_number: int)->list[int]:
+def sieve_eratosthenes(max_number):
     # from wikipedia
     # https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
     A = [i for i in range(2, max_number + 1)]

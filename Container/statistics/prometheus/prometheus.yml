@@ -10,7 +10,4 @@ scrape_configs:
     static_configs:
       - targets: ["<your local ip>:15692"]
         labels:
-          group: "RabbitMQ"
-
-remote_write:
-  - url: "http://<your local ip>:9091"
+          group: "test"
