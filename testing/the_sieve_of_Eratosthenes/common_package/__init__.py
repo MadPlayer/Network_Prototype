@@ -5,7 +5,7 @@ from .test_pb2_grpc import (
     PrimeCalculateStub,
     PrimeCalculateServicer,
 )
-from .test_pb2 import NumberRange, Response
+from .test_pb2 import Blob
 from .eratosthenes import sieve_eratosthenes
 
 __all__=(
@@ -13,7 +13,6 @@ __all__=(
     add_PrimeCalculateServicer_to_server,
     PrimeCalculateStub,
     PrimeCalculateServicer,
-    NumberRange,
-    Response,
+    Blob,
     sieve_eratosthenes,
 )

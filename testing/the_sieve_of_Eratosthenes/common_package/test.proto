@@ -4,21 +4,11 @@ package packet;
 
 service PrimeCalculate
 {
-  rpc get_prime_list(NumberRange) returns (Response) {}
+  rpc get_prime_list(Blob) returns (Blob) {}
 }
 
-message NumberRange
-{
-  repeated int64 values = 1;
-}
 
-message MQTT_AMQP_Request
+message Blob
 {
-  NumberRange number_range = 1;
-  string reply_to = 2;
-}
-
-message Response
-{
-  repeated int64 primes = 1;
+  bytes data = 1;
 }

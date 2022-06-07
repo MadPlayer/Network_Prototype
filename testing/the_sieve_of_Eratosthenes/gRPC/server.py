@@ -3,19 +3,14 @@ from grpc.aio import server, ServerInterceptor
 from common_package import (
     PrimeCalculateServicer,
     add_PrimeCalculateServicer_to_server,
-    NumberRange,
-    Response,
+    Blob,
     sieve_eratosthenes,
 )
-from prometheus_client import start_http_server, Counter, Histogram
-from prometheus_async.aio import time
+from prometheus_client import start_http_server, Counter
 
 request_counter = Counter("request", "the number of received requests")
-response_time = Histogram("response_time", "Histogram for networking time which spent to send response")
-
 
 class Interceptor(ServerInterceptor):
-    @time(response_time)
     async def intercept_service(self, continuation, handler_call_details):
         """
         Intercepts incoming RPCs before handling them over to a handler
@@ -25,9 +20,10 @@ class Interceptor(ServerInterceptor):
 
 
 class ServerImpl(PrimeCalculateServicer):
-    def get_prime_list(self, request: NumberRange, context)->Response:
-        n = len(request.values)
-        return sieve_eratosthenes(n)
+    def get_prime_list(self, request, context):
+        n = len(pickle.loads(request.data))
+        ans = sieve_eratosthenes(n)
+        return Blob(data=pickle.dumps(ans))
 
 
 async def main():
