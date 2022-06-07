@@ -45,7 +45,7 @@ class MQTTClient:
         async with self.client.filtered_messages(reply_topic) as msgs:
             async for msg in msgs:
                 response_count.inc()
-                future.set_result(msg)
+                future.set_result(msg.payload)
                 return
 
 
