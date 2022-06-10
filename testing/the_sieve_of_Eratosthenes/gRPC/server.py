@@ -7,7 +7,8 @@ from common_package import (
     Blob,
     sieve_eratosthenes,
 )
-from prometheus_client import start_http_server, Counter
+from prometheus_client import start_http_server, Counter, multiprocess, CollectorRegistry
+import sys
 
 request_counter = Counter("request", "the number of received requests")
 blob = Blob()
@@ -17,7 +18,6 @@ class Interceptor(ServerInterceptor):
         """
         Intercepts incoming RPCs before handling them over to a handler
         """
-        request_counter.inc()
         return await continuation(handler_call_details)
 
 
@@ -26,6 +26,7 @@ class ServerImpl(PrimeCalculateServicer):
         n = len(pickle.loads(request.data))
         ans = sieve_eratosthenes(n)
         blob.data = pickle.dumps(ans)
+        request_counter.inc()
         return blob
 
 
@@ -39,7 +40,10 @@ async def main():
 
 if __name__ == '__main__':
     try:
-        start_http_server(1234)
+        registry = CollectorRegistry()
+        multiprocess.MultiProcessCollector(registry)
+        if "1234" in sys.argv:
+            start_http_server(1234, registry=registry)
         asyncio.run(main())
     except Exception as e:
         print(e.args)

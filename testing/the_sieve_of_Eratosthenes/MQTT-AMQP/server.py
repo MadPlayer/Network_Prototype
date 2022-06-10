@@ -4,7 +4,8 @@ import logging
 from aio_pika import Message, connect
 from aio_pika.abc import AbstractIncomingMessage
 from common_package import sieve_eratosthenes
-from prometheus_client import Counter, start_http_server
+from prometheus_client import Counter, start_http_server, multiprocess, CollectorRegistry
+import sys
 
 URL = "localhost"
 request_count = Counter("request_amqp_mqtt",
@@ -12,7 +13,7 @@ request_count = Counter("request_amqp_mqtt",
 
 
 async def main():
-    user = "worker1"
+    user = sys.argv[1]
     pw = "test"
     conn = await connect(f"amqp://{user}:{pw}@{URL}/")
     loop = asyncio.get_running_loop()
@@ -51,5 +52,8 @@ async def main():
 
 
 if __name__ == '__main__':
-    start_http_server(1234)
+    registry = CollectorRegistry()
+    multiprocess.MultiProcessCollector(registry)
+    if "worker1234" in sys.argv:
+        start_http_server(1234, registry=registry)
     asyncio.run(main())
