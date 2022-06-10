@@ -11,6 +11,7 @@ from aio_pika.abc import (
 )
 from common_package import Blob, URL, DATA
 from prometheus_client import Counter, start_http_server
+import sys
 
 response_count = Counter("response_amqp", "the number of response that client recieves")
 
@@ -41,7 +42,7 @@ class OffloadingClient:
         if message.correlation_id is None:
             print(f"Bad message {message!r}")
 
-        await message.ack()
+        self.loop.create_task(message.ack())
         response_count.inc()
         future = self.futures.pop(message.correlation_id)
         future.set_result(message.body)
@@ -55,7 +56,7 @@ class OffloadingClient:
         self.loop.create_task(
             self.channel.default_exchange.publish(
                 Message(
-                    pickle.dumps(msg),
+                    msg,
                     correlation_id=correlation_id,
                     reply_to=self.callback_queue.name,
                 ),
@@ -67,12 +68,11 @@ class OffloadingClient:
 
 
 async def main():
-    client = await OffloadingClient().connect(login="client1", password="test")
-    start_http_server(5000)
-    request_msg = pickle.dumps(DATA)
+    client = await OffloadingClient().connect(login=sys.argv[1], password="test")
     while True:
+        request_msg = pickle.dumps(DATA)
         future = await client.request(request_msg)
-        result = pickle.loads(await future)
+        pickle.loads(await future)
 
 
 if __name__ == '__main__':

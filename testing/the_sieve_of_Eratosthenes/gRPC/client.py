@@ -25,19 +25,14 @@ def callback(outcome):
 
 
 async def main():
-    request_msg = Blob(data=pickle.dumps(DATA))
-    start_http_server(5000)
     async with insecure_channel(f"{URL}:50051", interceptors=(Interceptor(), )) as channel:
         stub = PrimeCalculateStub(channel)
         print("---start request---")
-        future: UnaryUnaryCall = None
         while True:
-            if future:
-                # callback(await future)
-                await future
-
+            request_msg = Blob(data=pickle.dumps(DATA))
             future = stub.get_prime_list(request_msg)
-
+            blob = await future
+            pickle.loads(blob.data)
 
 if __name__ == '__main__':
     asyncio.run(main())
